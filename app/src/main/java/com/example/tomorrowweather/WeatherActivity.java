@@ -1,5 +1,6 @@
 package com.example.tomorrowweather;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
@@ -22,6 +23,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.example.tomorrowweather.gson.Forecast;
 import com.example.tomorrowweather.gson.Weather;
+import com.example.tomorrowweather.service.AutoUpdataService;
 import com.example.tomorrowweather.util.HttpUtil;
 import com.example.tomorrowweather.util.Utility;
 
@@ -229,5 +231,10 @@ public class WeatherActivity extends AppCompatActivity {
         carWashText.setText(carWash);
         sportText.setText(sport);
         weatherLayout.setVisibility(View.VISIBLE);
+
+        //激活服务
+        weatherLayout.setVisibility(View.VISIBLE);
+        Intent intent = new Intent(this, AutoUpdataService.class);
+        startService(intent);
     }
 }
