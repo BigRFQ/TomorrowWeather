@@ -3,14 +3,9 @@ package com.example.tomorrowweather.gson;
 import com.google.gson.annotations.SerializedName;
 
 public class Basic {
-    @SerializedName("city")
+    @SerializedName("location")//所在县市名称
     public String cityName;
-    @SerializedName("id")
+    @SerializedName("cid")//天气代号
     public String weatherId;
 
-    public Update update;
-    public class Update{
-        @SerializedName("loc")
-        public String updateTime;
-    }
 }

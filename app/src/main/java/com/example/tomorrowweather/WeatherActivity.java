@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
 import android.preference.PreferenceManager;
-import android.speech.tts.TextToSpeech;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -21,7 +20,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.example.tomorrowweather.gson.Forecast;
+import com.example.tomorrowweather.gson.Daily_Forecast;
+import com.example.tomorrowweather.gson.Hourly;
 import com.example.tomorrowweather.gson.Weather;
 import com.example.tomorrowweather.service.AutoUpdataService;
 import com.example.tomorrowweather.util.HttpUtil;
@@ -40,9 +40,10 @@ public class WeatherActivity extends AppCompatActivity {
     private TextView titleUpdateTime;//更新时间
     private TextView degreeText;//温度
     private TextView weatherInfoText;
+    private LinearLayout hourlyLayout;//小时预报
     private LinearLayout forecastLayout;
-    private TextView aqiText;
-    private TextView pm25Text;
+//    private TextView aqiText;
+//    private TextView pm25Text;
     private TextView comfortText;
     private TextView carWashText;
     private TextView sportText;
@@ -73,9 +74,12 @@ public class WeatherActivity extends AppCompatActivity {
         titleUpdateTime = findViewById(R.id.title_update_time);
         degreeText = findViewById(R.id.degree_text);
         weatherInfoText = findViewById(R.id.weather_info_text);
+        //未来8小时天气预报
+        hourlyLayout =findViewById(R.id.hourly_layout);
+        //未来7天
         forecastLayout = findViewById(R.id.forecast_layout);
-        aqiText = findViewById(R.id.aqi_text);
-        pm25Text = findViewById(R.id.pm25_text);
+//        aqiText = findViewById(R.id.aqi_text);
+//        pm25Text = findViewById(R.id.pm25_text);
         comfortText = findViewById(R.id.comfort_text);
         carWashText = findViewById(R.id.car_wash_text);
         sportText = findViewById(R.id.sport_text);
@@ -130,7 +134,7 @@ public class WeatherActivity extends AppCompatActivity {
      * 根据天气id请求城市天气信息
      */
     public void requestWeather(final  String weatherId){
-        String weatherUrl = "http://guolin.tech/api/weather?cityid="+weatherId+"&key=8a21c9f29c0b492ab85284880f3fd0a8";
+        String weatherUrl = "https://free-api.heweather.net/s6/weather?key=167770030aba4b478d37995d2c0965d4&location="+weatherId;
         HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -200,30 +204,49 @@ public class WeatherActivity extends AppCompatActivity {
      */
     private void showWeatherInfo(Weather weather){
         String cityName = weather.basic.cityName;
-        String updateTime = weather.basic.update.updateTime.split(" ")[1];
+        String updateTime = weather.update.updateTime.split(" ")[1];
         String degree = weather.now.temperature+"℃";
-        String weatherInfo = weather.now.more.info;
+        String weatherInfo = weather.now.more;
         titleCity.setText(cityName);
         titleUpdateTime.setText(updateTime);
         degreeText.setText(degree);
         weatherInfoText.setText(weatherInfo);
+
+        //未来8小时天气预报刷新
+        hourlyLayout.removeAllViews();
+        for (Hourly hourly:weather.hourlyList){
+            View view = LayoutInflater.from(this).inflate(R.layout.forecast_item,forecastLayout,false);
+            TextView dateText = view.findViewById(R.id.date_text);
+            TextView infoText = view.findViewById(R.id.info_text);
+            TextView maxText = view.findViewById(R.id.max_text);
+            TextView minText = view.findViewById(R.id.min_text);
+            dateText.setText(hourly.time);
+            infoText.setText(hourly.cond_txt);
+            maxText.setText(hourly.tmp);
+            minText.setText(hourly.pop);
+            hourlyLayout.addView(view);
+        }
+
+        //未来7天天气预报刷新
         forecastLayout.removeAllViews();
-        for (Forecast forecast:weather.forecastList){
+        for (Daily_Forecast forecast:weather.forecastList){
             View view = LayoutInflater.from(this).inflate(R.layout.forecast_item,forecastLayout,false);
             TextView dateText = view.findViewById(R.id.date_text);
             TextView infoText = view.findViewById(R.id.info_text);
             TextView maxText = view.findViewById(R.id.max_text);
             TextView minText = view.findViewById(R.id.min_text);
             dateText.setText(forecast.date);
-            infoText.setText(forecast.more.info);
-            maxText.setText(forecast.temperature.max);
-            minText.setText(forecast.temperature.min);
+            infoText.setText(forecast.cond_txt_d);
+            maxText.setText(forecast.temperature_max);
+            minText.setText(forecast.temperature_min);
             forecastLayout.addView(view);
         }
-        if (weather.aqi !=null){
-            aqiText.setText(weather.aqi.city.aqi);
-            pm25Text.setText(weather.aqi.city.pm25);
-        }
+
+//        if (weather.aqi !=null){
+//            aqiText.setText(weather.aqi.city.aqi);
+//            pm25Text.setText(weather.aqi.city.pm25);
+//        }
+
         String comfort = "舒适度"+weather.suggestion.comfort.info;
         String carWash = "洗车指数"+weather.suggestion.carWash.info;
         String sport = "运动建议"+weather.suggestion.sport.info;

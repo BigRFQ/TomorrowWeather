@@ -62,12 +62,24 @@ public class ChooseAreaFragment extends Fragment {
         titleText = view.findViewById(R.id.title_text);
         backButton = view.findViewById(R.id.back_button);
         listView = view.findViewById(R.id.list_view);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (currentLevel ==LEVEL_PROVINCE){//不动作
+
+                }else if (currentLevel ==LEVEL_CITY){//返回省列表
+                    queryProvinces();
+                }else if (currentLevel ==LEVEL_COUNTY){//返回市列表
+                    queryCities();
+                }
+            }
+        });
         adapter = new ArrayAdapter<>(getContext(),android.R.layout.simple_list_item_1,dataList);
         listView.setAdapter(adapter);
         return view;
     }
 
-    @Override
+    @Override//确保与碎片相关联的活动一定已经创建完成的时候调用
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -99,7 +111,7 @@ public class ChooseAreaFragment extends Fragment {
                 }
             }
         });
-        queryProvinces();
+        queryProvinces();//获取省份列表
     }
     //查询全国所有的省，优先从数据库中查询，如果没有查询到在去服务器上查询
     private void queryProvinces(){
